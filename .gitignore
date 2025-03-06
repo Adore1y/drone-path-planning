@@ -1,7 +1,6 @@
 __pycache__/
 *.pyc
 *.pyo
-*.pyd
 .DS_Store
 python_prelim_results/
 python_final_results/
