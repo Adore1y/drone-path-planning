@@ -17,7 +17,7 @@
 
 1. 克隆仓库
 ```
-git clone https://github.com/username/drone-path-planning.git
+git clone https://github.com/Adore1y/drone-path-planning.git
 cd drone-path-planning
 ```
 
@@ -73,19 +73,7 @@ python run_simulation.py --mode webots --algorithm GAT-DRL --scenario dense --nu
 - `results/`: 结果和可视化
 - `worlds/`: 场景数据
 
-## 引用格式
 
-如果您在研究中使用了本项目，请按以下格式引用：
 
-```
-@article{author2023drone,
-  title={Drone Path Planning in Urban Environments: A Comparative Study of DRL and Classical Algorithms},
-  author={Author, A.},
-  journal={Journal of Intelligent Systems},
-  year={2023}
-}
-```
 
-## 许可证
 
-MIT
