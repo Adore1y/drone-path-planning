@@ -1,0 +1,67 @@
+#VRML_SIM R2023a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/floors/protos/Floor.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/robots/dji/mavic/protos/Mavic2Pro.proto"
+
+WorldInfo {
+  info [
+    "UAV Path Planning Simulation"
+    "Dense Urban Environment"
+  ]
+  title "UAV Path Planning"
+  basicTimeStep 16
+  FPS 30
+}
+
+Viewpoint {
+  orientation 0.38 0.08 -0.92 0.8
+  position -10 -10 15
+  follow "Mavic2Pro"
+}
+
+TexturedBackground {
+}
+
+TexturedBackgroundLight {
+}
+
+Floor {
+  size 200 200
+  appearance PBRAppearance {
+    baseColorMap ImageTexture {
+      url [
+        "textures/ground.jpg"
+      ]
+    }
+    roughness 1
+    metalness 0
+  }
+}
+
+Mavic2Pro {
+  translation 10 10 0.2
+  rotation 0 0 1 0
+  name "QUADCOPTER"
+  controller "drone_controller"
+  cameraSlot [
+    Camera {
+      width 400
+      height 240
+      near 0.2
+    }
+  ]
+}
+
+DEF SUPERVISOR Robot {
+  children [
+    Emitter {
+      channel 1
+    }
+  ]
+  supervisor TRUE
+  controller "supervisor"
+}
+
+# Buildings and waypoints will be dynamically added in runtime

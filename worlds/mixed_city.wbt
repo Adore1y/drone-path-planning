@@ -1,0 +1,432 @@
+#VRML_SIM R2023b utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/Floor.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/appearances/protos/Parquetry.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/apartment_structure/protos/Wall.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/appearances/protos/Roughcast.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/robots/dji/mavic/protos/Mavic2Pro.proto"
+
+WorldInfo {
+  info [
+    "Urban environment for drone path planning"
+  ]
+  title "无人机城市环境路径规划"
+  basicTimeStep 8
+  defaultDamping Damping {
+  }
+  coordinateSystem "NUE"
+}
+Viewpoint {
+  orientation -0.22 0.1 0.97 2.18
+  position 30 40 30
+  follow "Mavic 2 PRO"
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+Floor {
+  translation 0 0 0
+  size 500 500
+  appearance Parquetry {
+    type "light strip"
+  }
+}
+
+DEF BUILDING_0 Solid {
+  translation -1.2163825356243763 0 17.69160812078819
+  children [
+    DEF BODY_0 Shape {
+      appearance Roughcast {
+        colorOverride 0.6850004184196771 0.8466720823878887 0.8445766153954658
+      }
+      geometry Box {
+        size 7.361365366434304 20.118723361064852 6.608432508427782
+      }
+    }
+  ]
+  name "building_0"
+  boundingObject USE BODY_0
+}
+
+DEF BUILDING_1 Solid {
+  translation 25.88427849045354 0 57.1070738626972
+  children [
+    DEF BODY_1 Shape {
+      appearance Roughcast {
+        colorOverride 0.822033844986175 0.8049142270073992 0.8262198107536246
+      }
+      geometry Box {
+        size 10.727289029511612 19.871272854740315 10.182785641120994
+      }
+    }
+  ]
+  name "building_1"
+  boundingObject USE BODY_1
+}
+
+DEF BUILDING_2 Solid {
+  translation -60.758312254821774 0 65.614640561176
+  children [
+    DEF BODY_2 Shape {
+      appearance Roughcast {
+        colorOverride 0.842197371980443 0.7221980949876556 0.8820343802380612
+      }
+      geometry Box {
+        size 11.162072876382243 21.60874896564344 13.14700136441275
+      }
+    }
+  ]
+  name "building_2"
+  boundingObject USE BODY_2
+}
+
+DEF BUILDING_3 Solid {
+  translation -14.527782575882302 0 5.940665319644505
+  children [
+    DEF BODY_3 Shape {
+      appearance Roughcast {
+        colorOverride 0.7600432541327184 0.8988279502420792 0.8159864534864528
+      }
+      geometry Box {
+        size 10.322139083316706 24.552254536612978 6.592568049792064
+      }
+    }
+  ]
+  name "building_3"
+  boundingObject USE BODY_3
+}
+
+DEF BUILDING_4 Solid {
+  translation 67.40930155528366 0 53.82040527024555
+  children [
+    DEF BODY_4 Shape {
+      appearance Roughcast {
+        colorOverride 0.7418395642294471 0.6017621933368817 0.6076015208074979
+      }
+      geometry Box {
+        size 7.969880076999754 18.501169174238676 11.40224085528807
+      }
+    }
+  ]
+  name "building_4"
+  boundingObject USE BODY_4
+}
+
+DEF BUILDING_5 Solid {
+  translation -55.02476663869788 0 -39.705213892322234
+  children [
+    DEF BODY_5 Shape {
+      appearance Roughcast {
+        colorOverride 0.7152530808149963 0.7280533415871802 0.6994533401904427
+      }
+      geometry Box {
+        size 6.196959397936082 11.335385386759778 11.429104078615522
+      }
+    }
+  ]
+  name "building_5"
+  boundingObject USE BODY_5
+}
+
+DEF BUILDING_6 Solid {
+  translation 21.10086523963601 0 20.597036736143355
+  children [
+    DEF BODY_6 Shape {
+      appearance Roughcast {
+        colorOverride 0.7323458389674155 0.7178773666992022 0.7346588285976007
+      }
+      geometry Box {
+        size 7.240648873971123 13.441678376331552 6.125155693584517
+      }
+    }
+  ]
+  name "building_6"
+  boundingObject USE BODY_6
+}
+
+DEF BUILDING_7 Solid {
+  translation -30.164733438782765 0 -53.66808068832077
+  children [
+    DEF BODY_7 Shape {
+      appearance Roughcast {
+        colorOverride 0.6373649834630604 0.6033623036360687 0.6129161420066991
+      }
+      geometry Box {
+        size 7.0086519100042315 17.76117370020663 7.062001070967311
+      }
+    }
+  ]
+  name "building_7"
+  boundingObject USE BODY_7
+}
+
+DEF BUILDING_8 Solid {
+  translation 29.153746374996896 0 49.314459461335
+  children [
+    DEF BODY_8 Shape {
+      appearance Roughcast {
+        colorOverride 0.6562288130765112 0.6902994199746432 0.7080399466438545
+      }
+      geometry Box {
+        size 9.444356253063773 14.5260011819915 8.067439500828206
+      }
+    }
+  ]
+  name "building_8"
+  boundingObject USE BODY_8
+}
+
+DEF BUILDING_9 Solid {
+  translation -6.668374952696032 0 11.415443352160885
+  children [
+    DEF BODY_9 Shape {
+      appearance Roughcast {
+        colorOverride 0.6278934722708485 0.6916319857770424 0.742811657148586
+      }
+      geometry Box {
+        size 7.245077201459459 24.19927922377413 8.746639019881247
+      }
+    }
+  ]
+  name "building_9"
+  boundingObject USE BODY_9
+}
+
+DEF BUILDING_10 Solid {
+  translation 58.444391993721226 0 44.406007274242576
+  children [
+    DEF BODY_10 Shape {
+      appearance Roughcast {
+        colorOverride 0.8303991217815246 0.747252289652105 0.7123962882052977
+      }
+      geometry Box {
+        size 11.850199263187974 21.701569207613222 12.343556539879252
+      }
+    }
+  ]
+  name "building_10"
+  boundingObject USE BODY_10
+}
+
+DEF BUILDING_11 Solid {
+  translation 24.058797338871354 0 -23.966440806227133
+  children [
+    DEF BODY_11 Shape {
+      appearance Roughcast {
+        colorOverride 0.6479352919132271 0.8913225259836699 0.8241282996668328
+      }
+      geometry Box {
+        size 7.681577042349913 14.521181483822435 8.773954754001199
+      }
+    }
+  ]
+  name "building_11"
+  boundingObject USE BODY_11
+}
+
+DEF BUILDING_12 Solid {
+  translation -39.497439547995285 0 -39.80393556456121
+  children [
+    DEF BODY_12 Shape {
+      appearance Roughcast {
+        colorOverride 0.8640405983263417 0.6637065414385463 0.6916532824264254
+      }
+      geometry Box {
+        size 7.969068651253314 13.282883504168284 8.811371486360539
+      }
+    }
+  ]
+  name "building_12"
+  boundingObject USE BODY_12
+}
+
+DEF BUILDING_13 Solid {
+  translation -53.29160496542158 0 42.30211728805372
+  children [
+    DEF BODY_13 Shape {
+      appearance Roughcast {
+        colorOverride 0.6929009721168272 0.7333580424093549 0.8131294086196224
+      }
+      geometry Box {
+        size 9.17146284817302 20.252133112030698 12.82644054487232
+      }
+    }
+  ]
+  name "building_13"
+  boundingObject USE BODY_13
+}
+
+DEF BUILDING_14 Solid {
+  translation 12.380088303425884 0 63.25599655776618
+  children [
+    DEF BODY_14 Shape {
+      appearance Roughcast {
+        colorOverride 0.8370749651639768 0.7378982875558188 0.8723839364286442
+      }
+      geometry Box {
+        size 8.922222350508772 27.560389691040637 8.398763703979613
+      }
+    }
+  ]
+  name "building_14"
+  boundingObject USE BODY_14
+}
+
+DEF BUILDING_15 Solid {
+  translation 35.50058559342061 0 -52.23353493940565
+  children [
+    DEF BODY_15 Shape {
+      appearance Roughcast {
+        colorOverride 0.8507237047828571 0.7750453014229719 0.7301026569256012
+      }
+      geometry Box {
+        size 10.658398976988018 25.09195443338447 9.284287221428652
+      }
+    }
+  ]
+  name "building_15"
+  boundingObject USE BODY_15
+}
+
+DEF BUILDING_16 Solid {
+  translation -24.53869852320284 0 8.035550005313592
+  children [
+    DEF BODY_16 Shape {
+      appearance Roughcast {
+        colorOverride 0.6774694990836949 0.8537790697756477 0.6578568337468853
+      }
+      geometry Box {
+        size 9.905124721378533 23.85519186648072 6.679198128055399
+      }
+    }
+  ]
+  name "building_16"
+  boundingObject USE BODY_16
+}
+
+DEF BUILDING_17 Solid {
+  translation 30.977086387737998 0 -12.684764074748356
+  children [
+    DEF BODY_17 Shape {
+      appearance Roughcast {
+        colorOverride 0.7321159381562682 0.8378107359992313 0.8750963123352917
+      }
+      geometry Box {
+        size 7.266114054505447 21.375800847582404 6.481644659721841
+      }
+    }
+  ]
+  name "building_17"
+  boundingObject USE BODY_17
+}
+
+DEF BUILDING_18 Solid {
+  translation 53.942883043684326 0 21.720312823209976
+  children [
+    DEF BODY_18 Shape {
+      appearance Roughcast {
+        colorOverride 0.6764992650196608 0.894947625088625 0.7280647194284603
+      }
+      geometry Box {
+        size 8.593500926210893 25.487514610217346 9.005604418941637
+      }
+    }
+  ]
+  name "building_18"
+  boundingObject USE BODY_18
+}
+
+DEF BUILDING_19 Solid {
+  translation -57.74624515442738 0 3.021830757039401
+  children [
+    DEF BODY_19 Shape {
+      appearance Roughcast {
+        colorOverride 0.7205179203049102 0.7621952945337997 0.8621530768590321
+      }
+      geometry Box {
+        size 11.476967653274512 14.612297364747448 11.829193089122647
+      }
+    }
+  ]
+  name "building_19"
+  boundingObject USE BODY_19
+}
+
+DEF WALL_0 Solid {
+  translation 45.0 0 -91
+  children [
+    DEF WALL_SHAPE_0 Shape {
+      appearance Roughcast {
+        colorOverride 0.8 0.8 0.8
+      }
+      geometry Box {
+        size 1 2.0 182
+      }
+    }
+  ]
+  name "wall_0"
+  boundingObject USE WALL_SHAPE_0
+}
+
+DEF WALL_1 Solid {
+  translation -45.0 0 91
+  children [
+    DEF WALL_SHAPE_1 Shape {
+      appearance Roughcast {
+        colorOverride 0.8 0.8 0.8
+      }
+      geometry Box {
+        size 1 2.0 182
+      }
+    }
+  ]
+  name "wall_1"
+  boundingObject USE WALL_SHAPE_1
+}
+
+DEF WALL_2 Solid {
+  translation 91 0 45.0
+  children [
+    DEF WALL_SHAPE_2 Shape {
+      appearance Roughcast {
+        colorOverride 0.8 0.8 0.8
+      }
+      geometry Box {
+        size 182 2.0 1
+      }
+    }
+  ]
+  name "wall_2"
+  boundingObject USE WALL_SHAPE_2
+}
+
+DEF WALL_3 Solid {
+  translation -91 0 -45.0
+  children [
+    DEF WALL_SHAPE_3 Shape {
+      appearance Roughcast {
+        colorOverride 0.8 0.8 0.8
+      }
+      geometry Box {
+        size 182 2.0 1
+      }
+    }
+  ]
+  name "wall_3"
+  boundingObject USE WALL_SHAPE_3
+}
+
+DEF DRONE Mavic2Pro {
+  translation 0 1 0
+  controller "gat_drl"
+  cameraSlot [
+    Camera {
+      width 400
+      height 240
+      near 0.2
+    }
+  ]
+}

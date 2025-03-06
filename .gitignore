@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+python_prelim_results/
+python_final_results/
+webots_prelim_results/
+webots_final_results/
