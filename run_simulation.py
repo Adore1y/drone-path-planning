@@ -82,8 +82,12 @@ def run_webots_simulation(algorithm="GAT-DRL", scenario="mixed", num_waypoints=N
         else:  # mixed
             num_waypoints = 5
     
-    # 检查Webots是否已安装
-    webots_cmd = "webots"
+    # 使用绝对路径指定Webots可执行文件
+    webots_app_path = "/Applications/Webots.app"
+    webots_cmd = webots_app_path + "/Contents/MacOS/webots"
+    
+    # 如果使用open命令打开应用程序，则构建绝对路径
+    # world_abs_path = os.path.abspath(f"webots/worlds/{scenario}_scenario.wbt")
     
     # 检查目录结构
     webots_world_path = f"webots/worlds/{scenario}_scenario.wbt"
@@ -101,9 +105,11 @@ def run_webots_simulation(algorithm="GAT-DRL", scenario="mixed", num_waypoints=N
     env["SCENARIO"] = scenario
     env["NUM_WAYPOINTS"] = str(num_waypoints)
     env["OUTPUT_DIR"] = output_dir
+    env["WEBOTS_HOME"] = webots_app_path
     
-    # 构建命令
-    cmd = [webots_cmd, webots_world_path]
+    # 构建命令 - 使用绝对路径
+    world_abs_path = os.path.abspath(webots_world_path)
+    cmd = [webots_cmd, world_abs_path]
     
     print(f"运行Webots物理仿真: {' '.join(cmd)}")
     print(f"算法: {algorithm}, 场景: {scenario}, 必经点数量: {num_waypoints}")
@@ -120,7 +126,23 @@ def run_webots_simulation(algorithm="GAT-DRL", scenario="mixed", num_waypoints=N
         return process.returncode
     except FileNotFoundError:
         print("错误: 找不到Webots可执行文件。请确保Webots已安装且可在命令行中访问。")
-        return 1
+        print("尝试使用GUI方式打开Webots...")
+        
+        # 尝试使用open命令打开Webots应用程序
+        open_cmd = ["open", webots_app_path, "--args", world_abs_path]
+        try:
+            print(f"运行命令: {' '.join(open_cmd)}")
+            open_process = subprocess.run(open_cmd)
+            if open_process.returncode == 0:
+                print("已通过GUI方式启动Webots，请在Webots中手动加载世界文件：")
+                print(f"文件 > 打开世界 > 导航到: {world_abs_path}")
+                return 0
+            else:
+                print(f"通过GUI方式启动Webots失败，错误码: {open_process.returncode}")
+                return open_process.returncode
+        except Exception as e:
+            print(f"尝试启动Webots时出错: {str(e)}")
+            return 1
 
 def main():
     """主函数"""

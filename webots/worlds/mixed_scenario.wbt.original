@@ -1,0 +1,67 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/Floor.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/dji/mavic/protos/Mavic2Pro.proto"
+
+WorldInfo {
+  info [
+    "UAV Path Planning Simulation"
+    "Mixed Urban Environment"
+  ]
+  title "UAV Path Planning"
+  basicTimeStep 16
+  FPS 30
+}
+Viewpoint {
+  orientation 0.1 0.1 -0.99 1.5
+  position 10 10 20
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+Floor {
+  size 100 100
+}
+Mavic2Pro {
+  translation 0 0 0.2
+  controller "mavic_python"
+}
+DEF BOX1 Solid {
+  translation 5 0 1
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 1 0 0
+        roughness 0.5
+        metalness 0
+      }
+      geometry Box {
+        size 1 1 2
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 2
+  }
+}
+DEF BOX2 Solid {
+  translation 3 4 1
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0 0 1
+        roughness 0.5
+        metalness 0
+      }
+      geometry Box {
+        size 1 1 2
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 2
+  }
+}

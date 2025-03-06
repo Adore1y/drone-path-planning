@@ -1,0 +1,16 @@
+#VRML_SIM R2023b utf8
+WorldInfo {}
+Viewpoint {
+  orientation 0 0 1 0
+  position 0 0 10
+}
+DirectionalLight {
+  direction 0 0 -1
+}
+Floor {
+  size 10 10
+}
+Sphere {
+  translation 0 0 1
+  radius 1
+}

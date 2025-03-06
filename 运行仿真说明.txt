@@ -1,0 +1,2 @@
+运行Webots仿真的命令: open -a Webots.app "$(pwd)/webots/worlds/mixed_scenario.wbt"
+分析仿真数据的命令: cd webots/controllers/mavic_python && python analyze_flight_data.py
