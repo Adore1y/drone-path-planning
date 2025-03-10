@@ -84,8 +84,6 @@ python run_simulation.py --mode webots --algorithm GAT-DRL --scenario dense --nu
 ## 📚 项目资源
 
 - 项目代码库: [GitHub - Adore1y/drone-path-planning](https://github.com/Adore1y/drone-path-planning)
-- 项目演示视频: [无人机路径规划演示](https://github.com/Adore1y/drone-path-planning/demo)
-- 技术文档: [项目Wiki](https://github.com/Adore1y/drone-path-planning/wiki)
 
 
 
