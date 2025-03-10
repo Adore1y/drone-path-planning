@@ -1,8 +1,14 @@
+# 忽略训练结果文件夹(太大)
+training_results/
+
+# 忽略模型权重文件(太大)
+*.pt
+*.pth
+*.h5
+*.pkl
+
+# 忽略Python缓存
 __pycache__/
-*.pyc
-*.pyo
-.DS_Store
-python_prelim_results/
-python_final_results/
-webots_prelim_results/
-webots_final_results/
+*.py[cod]
+*.class
+.ipynb_checkpoints

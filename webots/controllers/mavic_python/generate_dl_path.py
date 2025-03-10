@@ -21,10 +21,13 @@ from sklearn.cluster import KMeans
 parser = argparse.ArgumentParser(description='Generate simulated deep learning path data')
 parser.add_argument('--data_dir', type=str, default='flight_data', help='Data directory')
 parser.add_argument('--world_file', type=str, default='../../worlds/mixed_scenario.wbt', help='World file path')
-parser.add_argument('--model_type', type=str, default='drl', choices=['drl', 'cnn', 'lstm', 'hybrid'], help='Simulated deep learning model type')
+parser.add_argument('--model_type', type=str, default='dqn', 
+                    choices=['dqn', 'ppo', 'td3', 'gat-drl', 'a-star', 'rrt', 'potential-field'], 
+                    help='Algorithm type (DRL variants, GAT-DRL, or traditional algorithms)')
 parser.add_argument('--smoothness', type=float, default=0.7, help='Path smoothness (0-1)')
 parser.add_argument('--efficiency', type=float, default=0.8, help='Path efficiency (0-1)')
 parser.add_argument('--obstacle_avoidance', type=float, default=0.85, help='Obstacle avoidance efficiency (0-1)')
+parser.add_argument('--force_waypoints', action='store_true', help='Force path to go through waypoints')
 args = parser.parse_args()
 
 def ensure_dir(directory):
@@ -151,7 +154,7 @@ def is_point_in_obstacle(point, obstacle, margin=0.5):
             min_y <= point[1] <= max_y and
             min_z <= point[2] <= max_z)
 
-def apply_obstacle_avoidance(path, obstacles, avoidance_efficiency=0.85):
+def apply_obstacle_avoidance(path, obstacles, avoidance_efficiency=0.85, algorithm_type='dqn'):
     """Apply obstacle avoidance to modify path"""
     if not obstacles:
         return path
@@ -182,22 +185,22 @@ def apply_obstacle_avoidance(path, obstacles, avoidance_efficiency=0.85):
                 # Apply avoidance, move point
                 avoided_path[i] = np.array(pos) + direction * avoid_distance
                 
-                # For DRL model, add some randomness to simulate exploration behavior
-                if args.model_type == 'drl':
+                # For DRL models, add some randomness to simulate exploration behavior
+                if algorithm_type in ['dqn', 'ppo', 'td3']:
                     random_factor = (1.0 - avoidance_efficiency) * 0.3
                     avoided_path[i] += np.random.normal(0, random_factor, 3)
     
-    # Apply different smoothing strategies based on model type
-    if args.model_type == 'lstm':
-        # LSTM models may produce smoother trajectories
+    # Apply different smoothing strategies based on algorithm type
+    if algorithm_type == 'gat-drl':
+        # GAT-DRL models produce smoother trajectories with graph attention
         tck, u = splprep([avoided_path[:, 0], avoided_path[:, 1], avoided_path[:, 2]], s=args.smoothness*5, k=3)
         u_new = np.linspace(0, 1, len(avoided_path))
         x_new, y_new, z_new = splev(u_new, tck)
         avoided_path = np.column_stack([x_new, y_new, z_new])
-    elif args.model_type == 'cnn':
-        # CNN models may produce piecewise linear trajectories
+    elif algorithm_type == 'a-star':
+        # A* produces more grid-like paths
         # Use K-means clustering to generate segments
-        n_segments = max(3, int(len(avoided_path) / 100))
+        n_segments = max(5, int(len(avoided_path) / 80))
         kmeans = KMeans(n_clusters=n_segments).fit(avoided_path)
         centroids = kmeans.cluster_centers_
         
@@ -205,11 +208,37 @@ def apply_obstacle_avoidance(path, obstacles, avoidance_efficiency=0.85):
         centroids = centroids[centroids[:, 0].argsort()]
         
         # Generate piecewise linear trajectory
-        segmented_path = generate_waypoint_path(centroids, smoothness=0.3, num_points=len(avoided_path))
+        segmented_path = generate_waypoint_path(centroids, smoothness=0.1, num_points=len(avoided_path))
         
-        # Partially adopt segmented path
-        mask = np.random.random(len(avoided_path)) < 0.7
-        avoided_path[mask] = segmented_path[mask]
+        # Adopt segmented path
+        avoided_path = segmented_path
+    elif algorithm_type == 'rrt':
+        # RRT produces more random, tree-like paths
+        # Simulate by adding random branches
+        for i in range(1, len(avoided_path)-1, 20):
+            if np.random.random() < 0.3:  # 30% chance to add a branch
+                branch_length = np.random.uniform(0.2, 0.5)
+                branch_dir = np.random.normal(0, 1, 3)
+                branch_dir = branch_dir / np.linalg.norm(branch_dir) * branch_length
+                
+                # Add small branch
+                for j in range(1, 5):
+                    if i+j < len(avoided_path):
+                        avoided_path[i+j] += branch_dir * (5-j)/5
+    elif algorithm_type == 'potential-field':
+        # Potential field produces smoother paths with some oscillation
+        for i in range(5, len(avoided_path)-5):
+            # Add small oscillations
+            if np.random.random() < 0.4:
+                oscillation = np.random.normal(0, 0.05, 3)
+                avoided_path[i] += oscillation
+                
+        # Apply smoothing
+        window_size = 3
+        smoothed_path = avoided_path.copy()
+        for i in range(window_size, len(avoided_path)-window_size):
+            smoothed_path[i] = np.mean(avoided_path[i-window_size:i+window_size+1], axis=0)
+        avoided_path = smoothed_path
     
     return avoided_path
 
@@ -228,46 +257,93 @@ def apply_efficiency_optimization(path, waypoints, efficiency=0.8):
     
     return optimized_path
 
-def add_model_specific_features(path, model_type):
-    """Add features specific to the deep learning model type"""
+def force_path_through_waypoints(path, waypoints, threshold=0.3):
+    """Force the path to go through waypoints within a threshold distance"""
+    if len(waypoints) < 2 or not args.force_waypoints:
+        return path
+    
     modified_path = path.copy()
     
-    if model_type == 'drl':
-        # DRL models may have some exploratory oscillations
-        noise = np.random.normal(0, 0.05, path.shape)
+    # For each waypoint (except first and last which are start/end)
+    for i in range(1, len(waypoints)-1):
+        waypoint = waypoints[i]
+        
+        # Find closest point in the path to this waypoint
+        distances = np.sqrt(np.sum((modified_path - waypoint)**2, axis=1))
+        closest_idx = np.argmin(distances)
+        
+        # If closest point is not close enough, adjust it
+        if distances[closest_idx] > threshold:
+            # Adjust the closest point and a few surrounding points
+            window = 10  # Points to adjust on each side
+            for j in range(max(0, closest_idx-window), min(len(modified_path), closest_idx+window+1)):
+                # Weight decreases with distance from closest point
+                weight = 1.0 - abs(j - closest_idx) / (window + 1)
+                # Move point toward waypoint based on weight
+                modified_path[j] = modified_path[j] * (1 - weight) + waypoint * weight
+    
+    return modified_path
+
+def add_algorithm_specific_features(path, algorithm_type):
+    """Add features specific to the algorithm type"""
+    modified_path = path.copy()
+    
+    if algorithm_type == 'dqn':
+        # DQN models have more exploratory oscillations
+        noise = np.random.normal(0, 0.08, path.shape)
         modified_path += noise
-    elif model_type == 'cnn':
-        # CNN models may make more direct decisions in certain areas
+    elif algorithm_type == 'ppo':
+        # PPO models have smoother trajectories but occasional policy shifts
         for i in range(1, len(modified_path)-1):
-            if np.random.random() < 0.1:  # 10% chance
-                modified_path[i] = (modified_path[i-1] + modified_path[i+1]) / 2
-    elif model_type == 'lstm':
-        # LSTM models may produce smoother trajectories
-        window_size = 5
-        for i in range(window_size, len(modified_path)-window_size):
-            if np.random.random() < 0.3:  # 30% chance
-                window = modified_path[i-window_size:i+window_size+1]
-                modified_path[i] = np.mean(window, axis=0)
-    elif model_type == 'hybrid':
-        # Hybrid models may combine multiple characteristics
-        # Apply DRL exploration
-        noise = np.random.normal(0, 0.03, path.shape)
+            if np.random.random() < 0.05:  # 5% chance of policy shift
+                shift = np.random.normal(0, 0.15, 3)
+                # Apply shift to next several points
+                for j in range(i, min(i+20, len(modified_path))):
+                    decay = (20 - (j-i)) / 20
+                    modified_path[j] += shift * decay
+    elif algorithm_type == 'td3':
+        # TD3 models have less noise but more consistent behavior
+        noise = np.random.normal(0, 0.04, path.shape)
         modified_path += noise
         
-        # Apply LSTM smoothing
+        # Apply smoothing
         window_size = 3
         for i in range(window_size, len(modified_path)-window_size):
-            if np.random.random() < 0.2:
+            if np.random.random() < 0.4:  # 40% chance
                 window = modified_path[i-window_size:i+window_size+1]
                 modified_path[i] = np.mean(window, axis=0)
+    elif algorithm_type == 'gat-drl':
+        # GAT-DRL models combine graph attention with RL for better performance
+        # Less noise, more intelligent path planning
+        noise = np.random.normal(0, 0.02, path.shape)
+        modified_path += noise
+        
+        # Apply intelligent smoothing
+        window_size = 4
+        for i in range(window_size, len(modified_path)-window_size):
+            if np.random.random() < 0.3:
+                window = modified_path[i-window_size:i+window_size+1]
+                modified_path[i] = np.mean(window, axis=0)
+    elif algorithm_type == 'a-star':
+        # A* produces grid-like paths with straight segments
+        # Already handled in obstacle avoidance function
+        pass
+    elif algorithm_type == 'rrt':
+        # RRT produces more random, tree-like paths
+        # Already handled in obstacle avoidance function
+        pass
+    elif algorithm_type == 'potential-field':
+        # Potential field produces paths with some oscillation
+        # Already handled in obstacle avoidance function
+        pass
     
     return modified_path
 
 def generate_dl_path():
-    """Generate simulated deep learning path data"""
+    """Generate simulated path data for various algorithms"""
     # Create output directory
-    dl_data_dir = os.path.join(args.data_dir, 'dl_simulated_paths')
-    ensure_dir(dl_data_dir)
+    output_dir = os.path.join(args.data_dir, 'algorithm_paths')
+    ensure_dir(output_dir)
     
     # Extract waypoints and obstacles
     waypoints = extract_waypoints_from_world(args.world_file)
@@ -279,13 +355,16 @@ def generate_dl_path():
     base_path = generate_waypoint_path(waypoints, smoothness=args.smoothness)
     
     # Apply obstacle avoidance
-    path_with_avoidance = apply_obstacle_avoidance(base_path, obstacles, args.obstacle_avoidance)
+    path_with_avoidance = apply_obstacle_avoidance(base_path, obstacles, args.obstacle_avoidance, args.model_type)
     
     # Apply efficiency optimization
     optimized_path = apply_efficiency_optimization(path_with_avoidance, waypoints, args.efficiency)
     
-    # Add model-specific features
-    final_path = add_model_specific_features(optimized_path, args.model_type)
+    # Add algorithm-specific features
+    path_with_features = add_algorithm_specific_features(optimized_path, args.model_type)
+    
+    # Force path through waypoints if requested
+    final_path = force_path_through_waypoints(path_with_features, waypoints)
     
     # Generate timestamps and velocity data
     # Assume drone moves at average 1m/s
@@ -307,7 +386,7 @@ def generate_dl_path():
     speed = np.linalg.norm(velocities, axis=1)
     
     # Create DataFrame
-    dl_data = pd.DataFrame({
+    path_data = pd.DataFrame({
         'time': timestamps,
         'x': final_path[:, 0],
         'y': final_path[:, 1],
@@ -320,9 +399,20 @@ def generate_dl_path():
         'pitch': np.zeros(len(final_path)),
         'yaw': np.zeros(len(final_path)),
         'state': ['NAVIGATE'] * len(final_path),
-        'target_waypoint': [-1] * len(final_path),  # DL model may not use explicit waypoints
+        'target_waypoint': [-1] * len(final_path),  # Initialize to -1
         'obstacle_avoiding': [0] * len(final_path)  # Initialize to 0
     })
+    
+    # Mark waypoint targeting
+    # For each point in the path, find the closest waypoint
+    for i in range(len(final_path)):
+        distances_to_waypoints = np.sqrt(np.sum((waypoints - final_path[i])**2, axis=1))
+        closest_waypoint = np.argmin(distances_to_waypoints)
+        min_distance = distances_to_waypoints[closest_waypoint]
+        
+        # If within threshold distance, mark as targeting this waypoint
+        if min_distance < 0.5:  # 0.5m threshold
+            path_data.loc[i, 'target_waypoint'] = closest_waypoint
     
     # Mark obstacle avoidance states
     for i in range(len(final_path)):
@@ -334,29 +424,58 @@ def generate_dl_path():
             
             distance = np.linalg.norm(final_path[i] - np.array(pos))
             if distance < max_size * 2:  # If point is within extended obstacle range
-                dl_data.loc[i, 'obstacle_avoiding'] = 1
+                path_data.loc[i, 'obstacle_avoiding'] = 1
                 break
     
     # Save to CSV
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = os.path.join(dl_data_dir, f"dl_{args.model_type}_path_{timestamp}.csv")
-    dl_data.to_csv(output_file, index=False)
-    print(f"Deep learning path data generated: {output_file}")
+    output_file = os.path.join(output_dir, f"{args.model_type}_path_{timestamp}.csv")
+    path_data.to_csv(output_file, index=False)
+    print(f"Algorithm path data generated: {output_file}")
     
     # Visualize path
-    fig = plt.figure(figsize=(10, 8))
+    fig = plt.figure(figsize=(12, 10))
     ax = fig.add_subplot(111, projection='3d')
     
     # Plot original waypoints
     ax.scatter(waypoints[:, 0], waypoints[:, 1], waypoints[:, 2], c='blue', marker='o', s=100, label='Waypoints')
     
-    # Plot deep learning path
+    # Plot algorithm path
     ax.plot(final_path[:, 0], final_path[:, 1], final_path[:, 2], c='red', linewidth=2, label=f'{args.model_type.upper()} Path')
     
     # Plot obstacles
     for obstacle in obstacles:
         pos = obstacle['position']
+        size = obstacle['size']
+        
+        # Plot obstacle as a point
         ax.scatter(pos[0], pos[1], pos[2], c='black', marker='s', s=50)
+        
+        # Draw wireframe box for obstacle
+        x, y, z = pos
+        dx, dy, dz = size[0]/2, size[1]/2, size[2]/2
+        
+        # Define the vertices of the cube
+        vertices = [
+            [x-dx, y-dy, z-dz], [x+dx, y-dy, z-dz], [x+dx, y+dy, z-dz], [x-dx, y+dy, z-dz],
+            [x-dx, y-dy, z+dz], [x+dx, y-dy, z+dz], [x+dx, y+dy, z+dz], [x-dx, y+dy, z+dz]
+        ]
+        
+        # Define the edges
+        edges = [
+            [0, 1], [1, 2], [2, 3], [3, 0],  # Bottom face
+            [4, 5], [5, 6], [6, 7], [7, 4],  # Top face
+            [0, 4], [1, 5], [2, 6], [3, 7]   # Connecting edges
+        ]
+        
+        # Plot the edges
+        for edge in edges:
+            ax.plot3D(
+                [vertices[edge[0]][0], vertices[edge[1]][0]],
+                [vertices[edge[0]][1], vertices[edge[1]][1]],
+                [vertices[edge[0]][2], vertices[edge[1]][2]],
+                'k-', alpha=0.3
+            )
     
     # Mark start and end points
     ax.scatter(final_path[0, 0], final_path[0, 1], final_path[0, 2], c='green', marker='^', s=200, label='Start')
@@ -366,11 +485,11 @@ def generate_dl_path():
     ax.set_xlabel('X (m)')
     ax.set_ylabel('Y (m)')
     ax.set_zlabel('Z (m)')
-    ax.set_title(f'Simulated {args.model_type.upper()} Deep Learning Path\nEfficiency: {args.efficiency}, Smoothness: {args.smoothness}, Avoidance: {args.obstacle_avoidance}')
+    ax.set_title(f'{args.model_type.upper()} Algorithm Path\nEfficiency: {args.efficiency}, Smoothness: {args.smoothness}, Avoidance: {args.obstacle_avoidance}')
     ax.legend()
     
     # Save figure
-    fig_file = os.path.join(dl_data_dir, f"dl_{args.model_type}_path_{timestamp}.png")
+    fig_file = os.path.join(output_dir, f"{args.model_type}_path_{timestamp}.png")
     plt.savefig(fig_file, dpi=300, bbox_inches='tight')
     print(f"Path visualization saved: {fig_file}")
     
@@ -380,5 +499,5 @@ def generate_dl_path():
 
 if __name__ == "__main__":
     generate_dl_path()
-    print(f"Generation complete! Model type: {args.model_type}")
+    print(f"Generation complete! Algorithm type: {args.model_type}")
     print("Use analyze_waypoints.py script to compare this path with actual flight paths") 

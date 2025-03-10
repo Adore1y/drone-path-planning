@@ -3,7 +3,7 @@
 """
 Path Comparison Script
 For comparing different path planning algorithms
-Can compare actual flight paths with simulated deep learning paths
+Can compare actual flight paths with various algorithm paths
 """
 
 import os
@@ -26,7 +26,9 @@ parser.add_argument('--world_file', type=str, default='../../worlds/mixed_scenar
 parser.add_argument('--labels', nargs='+', help='Labels for each path')
 parser.add_argument('--colors', nargs='+', help='Colors for each path')
 parser.add_argument('--latest', action='store_true', help='Use the latest data files')
-parser.add_argument('--dl_latest', action='store_true', help='Include the latest deep learning simulated data')
+parser.add_argument('--all_algorithms', action='store_true', help='Include all available algorithm paths')
+parser.add_argument('--algorithms', nargs='+', choices=['dqn', 'ppo', 'td3', 'gat-drl', 'a-star', 'rrt', 'potential-field'], 
+                    help='Specific algorithms to include in comparison')
 parser.add_argument('--top_view', action='store_true', help='Generate top view')
 parser.add_argument('--metrics_only', action='store_true', help='Calculate metrics only, no images')
 args = parser.parse_args()
@@ -112,23 +114,34 @@ def extract_obstacles_from_world(world_file_path):
         return []
 
 def find_latest_files():
-    """Find the latest actual flight data and deep learning simulated data"""
+    """Find the latest actual flight data and algorithm paths"""
     flight_files = []
     
     # Find latest actual flight data
-    flight_data_pattern = 'flight_data/flight_data_*.csv'
+    flight_data_pattern = 'flight_data/mavic_flight_data_*.csv'
     flight_data_files = glob.glob(flight_data_pattern)
     if flight_data_files:
         latest_flight_file = max(flight_data_files, key=os.path.getmtime)
         flight_files.append(latest_flight_file)
     
-    # If needed, find latest deep learning simulated data
-    if args.dl_latest:
-        dl_data_pattern = 'flight_data/dl_simulated_paths/dl_*_path_*.csv'
-        dl_data_files = glob.glob(dl_data_pattern)
-        if dl_data_files:
-            latest_dl_file = max(dl_data_files, key=os.path.getmtime)
-            flight_files.append(latest_dl_file)
+    # If needed, find latest algorithm paths
+    if args.all_algorithms:
+        # Find all algorithm types
+        algorithm_types = ['dqn', 'ppo', 'td3', 'gat-drl', 'a-star', 'rrt', 'potential-field']
+        for alg in algorithm_types:
+            alg_pattern = f'flight_data/algorithm_paths/{alg}_path_*.csv'
+            alg_files = glob.glob(alg_pattern)
+            if alg_files:
+                latest_alg_file = max(alg_files, key=os.path.getmtime)
+                flight_files.append(latest_alg_file)
+    elif args.algorithms:
+        # Find specific algorithm types
+        for alg in args.algorithms:
+            alg_pattern = f'flight_data/algorithm_paths/{alg}_path_*.csv'
+            alg_files = glob.glob(alg_pattern)
+            if alg_files:
+                latest_alg_file = max(alg_files, key=os.path.getmtime)
+                flight_files.append(latest_alg_file)
     
     return flight_files
 
@@ -149,24 +162,31 @@ def load_flight_data(file_path):
 
 def generate_default_colors(num_paths):
     """Generate default color list"""
-    default_colors = ['red', 'blue', 'green', 'orange', 'purple', 'cyan', 'magenta', 'yellow']
+    default_colors = ['red', 'blue', 'green', 'orange', 'purple', 'cyan', 'magenta', 'yellow', 
+                      'brown', 'pink', 'gray', 'olive', 'navy', 'teal', 'coral']
     return default_colors[:num_paths] if num_paths <= len(default_colors) else \
-           [plt.cm.tab10(i) for i in range(num_paths)]
+           [plt.cm.tab20(i) for i in range(num_paths)]
 
 def generate_default_labels(file_paths):
     """Generate default labels based on filenames"""
     labels = []
     for file_path in file_paths:
-        if 'flight_data_' in file_path:
+        if 'mavic_flight_data_' in file_path:
             labels.append('Actual Flight')
-        elif 'dl_drl_path' in file_path:
-            labels.append('DRL Model')
-        elif 'dl_cnn_path' in file_path:
-            labels.append('CNN Model')
-        elif 'dl_lstm_path' in file_path:
-            labels.append('LSTM Model')
-        elif 'dl_hybrid_path' in file_path:
-            labels.append('Hybrid Model')
+        elif 'dqn_path' in file_path:
+            labels.append('DQN')
+        elif 'ppo_path' in file_path:
+            labels.append('PPO')
+        elif 'td3_path' in file_path:
+            labels.append('TD3')
+        elif 'gat-drl_path' in file_path:
+            labels.append('GAT-DRL')
+        elif 'a-star_path' in file_path:
+            labels.append('A*')
+        elif 'rrt_path' in file_path:
+            labels.append('RRT')
+        elif 'potential-field_path' in file_path:
+            labels.append('Potential Field')
         else:
             # Extract label from filename
             basename = os.path.basename(file_path)
@@ -269,100 +289,138 @@ def calculate_path_metrics(data, waypoints):
     return metrics
 
 def plot_3d_paths(file_paths, data_list, labels, colors, waypoints, obstacles, output_dir):
-    """Plot 3D path diagram"""
-    fig = plt.figure(figsize=(12, 10))
+    """Plot 3D comparison of multiple paths"""
+    fig = plt.figure(figsize=(14, 12))
     ax = fig.add_subplot(111, projection='3d')
     
     # Plot each path
-    for i, (data, label, color) in enumerate(zip(data_list, labels, colors)):
-        coords = data[['x', 'y', 'z']].values
-        ax.plot(coords[:, 0], coords[:, 1], coords[:, 2], color=color, linewidth=2, label=label)
+    for i, (file_path, data, label, color) in enumerate(zip(file_paths, data_list, labels, colors)):
+        x = data['x'].values
+        y = data['y'].values
+        z = data['z'].values
+        
+        # Plot path
+        ax.plot(x, y, z, color=color, linewidth=2, label=label)
         
         # Mark start and end points
-        ax.scatter(coords[0, 0], coords[0, 1], coords[0, 2], color=color, marker='^', s=100)
-        ax.scatter(coords[-1, 0], coords[-1, 1], coords[-1, 2], color=color, marker='v', s=100)
+        if i == 0:  # Only for the first path to avoid cluttering
+            ax.scatter(x[0], y[0], z[0], c='green', marker='^', s=100, label='Start')
+            ax.scatter(x[-1], y[-1], z[-1], c='red', marker='v', s=100, label='End')
     
     # Plot waypoints
     ax.scatter(waypoints[:, 0], waypoints[:, 1], waypoints[:, 2], c='blue', marker='o', s=80, label='Waypoints')
     
-    # Plot ideal path
-    if len(waypoints) >= 2:
-        # Use spline interpolation for smooth ideal path
-        tck, u = splprep([waypoints[:, 0], waypoints[:, 1], waypoints[:, 2]], s=0, k=min(3, len(waypoints)-1))
-        u_new = np.linspace(0, 1, 100)
-        ideal_x, ideal_y, ideal_z = splev(u_new, tck)
-        ax.plot(ideal_x, ideal_y, ideal_z, 'k--', linewidth=1.5, label='Ideal Path')
+    # Number the waypoints
+    for i, (wp_x, wp_y, wp_z) in enumerate(waypoints):
+        ax.text(wp_x, wp_y, wp_z, f'{i+1}', fontsize=10, color='darkblue')
     
     # Plot obstacles
     for obstacle in obstacles:
         pos = obstacle['position']
-        ax.scatter(pos[0], pos[1], pos[2], c='black', marker='s', s=50)
+        size = obstacle['size']
+        
+        # Plot obstacle as a point
+        ax.scatter(pos[0], pos[1], pos[2], c='black', marker='s', s=30)
+        
+        # Draw wireframe box for obstacle
+        x, y, z = pos
+        dx, dy, dz = size[0]/2, size[1]/2, size[2]/2
+        
+        # Define the vertices of the cube
+        vertices = [
+            [x-dx, y-dy, z-dz], [x+dx, y-dy, z-dz], [x+dx, y+dy, z-dz], [x-dx, y+dy, z-dz],
+            [x-dx, y-dy, z+dz], [x+dx, y-dy, z+dz], [x+dx, y+dy, z+dz], [x-dx, y+dy, z+dz]
+        ]
+        
+        # Define the edges
+        edges = [
+            [0, 1], [1, 2], [2, 3], [3, 0],  # Bottom face
+            [4, 5], [5, 6], [6, 7], [7, 4],  # Top face
+            [0, 4], [1, 5], [2, 6], [3, 7]   # Connecting edges
+        ]
+        
+        # Plot the edges
+        for edge in edges:
+            ax.plot3D(
+                [vertices[edge[0]][0], vertices[edge[1]][0]],
+                [vertices[edge[0]][1], vertices[edge[1]][1]],
+                [vertices[edge[0]][2], vertices[edge[1]][2]],
+                'k-', alpha=0.3
+            )
     
-    # Set title and labels
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    ax.set_title(f'Path Comparison ({timestamp})', fontsize=14)
-    ax.set_xlabel('X (m)', fontsize=12)
-    ax.set_ylabel('Y (m)', fontsize=12)
-    ax.set_zlabel('Z (m)', fontsize=12)
-    ax.legend(fontsize=10)
+    # Configure axes
+    ax.set_xlabel('X (m)')
+    ax.set_ylabel('Y (m)')
+    ax.set_zlabel('Z (m)')
     
-    # Save the figure
-    output_file = os.path.join(output_dir, f"path_comparison_3d_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png")
-    plt.savefig(output_file, dpi=300, bbox_inches='tight')
-    print(f"3D path comparison saved to: {output_file}")
+    # Add title and legend
+    plt.title('Path Comparison')
+    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
     
-    plt.close(fig)
+    plt.tight_layout()
+    
+    # Save figure
+    if output_dir:
+        ensure_dir(output_dir)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"path_comparison_3d_{timestamp}.png"
+        filepath = os.path.join(output_dir, filename)
+        plt.savefig(filepath, dpi=300, bbox_inches='tight')
+        print(f"3D path comparison saved to: {filepath}")
+    
+    return fig
 
 def plot_top_view(file_paths, data_list, labels, colors, waypoints, obstacles, output_dir):
-    """Plot top view (X-Y plane)"""
-    if not args.top_view:
-        return
-    
-    fig, ax = plt.subplots(figsize=(12, 10))
+    """Plot top-down view comparison of multiple paths"""
+    fig, ax = plt.subplots(figsize=(14, 12))
     
     # Plot each path
-    for data, label, color in zip(data_list, labels, colors):
-        coords = data[['x', 'y']].values
-        ax.plot(coords[:, 0], coords[:, 1], color=color, linewidth=2, label=label)
+    for file_path, data, label, color in zip(file_paths, data_list, labels, colors):
+        x = data['x'].values
+        y = data['y'].values
         
-        # Mark start and end points
-        ax.scatter(coords[0, 0], coords[0, 1], color=color, marker='^', s=100)
-        ax.scatter(coords[-1, 0], coords[-1, 1], color=color, marker='v', s=100)
+        # Plot path
+        ax.plot(x, y, color=color, linewidth=2, label=label)
     
     # Plot waypoints
     ax.scatter(waypoints[:, 0], waypoints[:, 1], c='blue', marker='o', s=80, label='Waypoints')
     
-    # Plot ideal path
-    if len(waypoints) >= 2:
-        # Use spline interpolation for smooth ideal path
-        tck, u = splprep([waypoints[:, 0], waypoints[:, 1]], s=0, k=min(3, len(waypoints)-1))
-        u_new = np.linspace(0, 1, 100)
-        ideal_x, ideal_y = splev(u_new, tck)
-        ax.plot(ideal_x, ideal_y, 'k--', linewidth=1.5, label='Ideal Path')
+    # Number the waypoints
+    for i, (wp_x, wp_y, _) in enumerate(waypoints):
+        ax.text(wp_x, wp_y, f'{i+1}', fontsize=10, color='darkblue')
     
-    # Plot obstacles (top view)
+    # Plot obstacles
     for obstacle in obstacles:
         pos = obstacle['position']
         size = obstacle['size']
-        left = pos[0] - size[0]/2
-        bottom = pos[1] - size[1]/2
-        rect = plt.Rectangle((left, bottom), size[0], size[1], color='gray', alpha=0.5)
+        
+        # Draw rectangle for obstacle footprint
+        rect = plt.Rectangle((pos[0]-size[0]/2, pos[1]-size[1]/2), size[0], size[1], 
+                           fill=True, color='black', alpha=0.3)
         ax.add_patch(rect)
     
-    # Set title and labels
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    ax.set_title(f'Path Comparison - Top View ({timestamp})', fontsize=14)
-    ax.set_xlabel('X (m)', fontsize=12)
-    ax.set_ylabel('Y (m)', fontsize=12)
+    # Configure axes
+    ax.set_xlabel('X (m)')
+    ax.set_ylabel('Y (m)')
     ax.grid(True)
-    ax.legend(fontsize=10)
+    ax.set_aspect('equal')
     
-    # Save the figure
-    output_file = os.path.join(output_dir, f"path_comparison_top_view_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png")
-    plt.savefig(output_file, dpi=300, bbox_inches='tight')
-    print(f"Top view comparison saved to: {output_file}")
+    # Add title and legend
+    plt.title('Top View Path Comparison')
+    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
     
-    plt.close(fig)
+    plt.tight_layout()
+    
+    # Save figure
+    if output_dir:
+        ensure_dir(output_dir)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"path_comparison_top_{timestamp}.png"
+        filepath = os.path.join(output_dir, filename)
+        plt.savefig(filepath, dpi=300, bbox_inches='tight')
+        print(f"Top view comparison saved to: {filepath}")
+    
+    return fig
 
 def generate_metrics_comparison(data_list, labels, metrics_list, output_dir):
     """Generate metrics comparison table and charts"""
@@ -421,24 +479,28 @@ def generate_metrics_comparison(data_list, labels, metrics_list, output_dir):
 
 def main():
     # Ensure output directory exists
-    ensure_dir(args.output_dir)
+    output_dir = args.output_dir
+    ensure_dir(output_dir)
     
-    # Determine files to compare
+    # Determine which files to use
     file_paths = []
     if args.files:
         file_paths = args.files
-    elif args.latest:
+    elif args.latest or args.all_algorithms or args.algorithms:
         file_paths = find_latest_files()
+    else:
+        print("No files specified. Use --files, --latest, --all_algorithms, or --algorithms option.")
+        return
     
     if not file_paths:
-        print("Error: No comparison files specified. Use --files or --latest argument")
+        print("No matching files found.")
         return
     
     print(f"Comparing {len(file_paths)} files:")
-    for path in file_paths:
-        print(f"  - {path}")
+    for file_path in file_paths:
+        print(f"  - {file_path}")
     
-    # Load data
+    # Load data from each file
     data_list = []
     valid_file_paths = []
     for file_path in file_paths:
@@ -448,24 +510,19 @@ def main():
             valid_file_paths.append(file_path)
     
     if not data_list:
-        print("Error: Could not load any data files")
+        print("No valid data files found.")
         return
-    
-    # Prepare labels and colors
-    labels = args.labels if args.labels else generate_default_labels(valid_file_paths)
-    colors = args.colors if args.colors else generate_default_colors(len(data_list))
-    
-    # Ensure label and color counts match
-    if len(labels) < len(data_list):
-        labels.extend([f'Path {i+1}' for i in range(len(labels), len(data_list))])
-    if len(colors) < len(data_list):
-        colors.extend(generate_default_colors(len(data_list) - len(colors)))
     
     # Extract waypoints and obstacles
     waypoints = extract_waypoints_from_world(args.world_file)
-    obstacles = extract_obstacles_from_world(args.world_file)
+    print(f"Extracted {len(waypoints)} waypoints from world file")
     
-    print(f"Extracted {len(waypoints)} waypoints and {len(obstacles)} obstacles")
+    obstacles = extract_obstacles_from_world(args.world_file)
+    print(f"Extracted {len(obstacles)} obstacles from world file")
+    
+    # Generate labels and colors if not provided
+    labels = args.labels if args.labels else generate_default_labels(valid_file_paths)
+    colors = args.colors if args.colors else generate_default_colors(len(valid_file_paths))
     
     # Calculate metrics for each path
     metrics_list = []
@@ -473,16 +530,22 @@ def main():
         metrics = calculate_path_metrics(data, waypoints)
         metrics_list.append(metrics)
     
-    # Plot 3D path comparison
+    # Save metrics to CSV
+    metrics_df = pd.DataFrame(metrics_list, index=labels)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    metrics_file = os.path.join(output_dir, f"path_metrics_{timestamp}.csv")
+    metrics_df.to_csv(metrics_file)
+    print(f"Path metrics saved to: {metrics_file}")
+    
+    # Generate plots
     if not args.metrics_only:
-        plot_3d_paths(valid_file_paths, data_list, labels, colors, waypoints, obstacles, args.output_dir)
+        fig_3d = plot_3d_paths(valid_file_paths, data_list, labels, colors, waypoints, obstacles, output_dir)
         
-        # Plot top view
         if args.top_view:
-            plot_top_view(valid_file_paths, data_list, labels, colors, waypoints, obstacles, args.output_dir)
+            fig_top = plot_top_view(valid_file_paths, data_list, labels, colors, waypoints, obstacles, output_dir)
     
     # Generate metrics comparison
-    generate_metrics_comparison(data_list, labels, metrics_list, args.output_dir)
+    fig_metrics = generate_metrics_comparison(data_list, labels, metrics_list, output_dir)
     
     print("Path comparison complete!")
 
