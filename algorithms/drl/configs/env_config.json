@@ -1,0 +1,31 @@
+{
+  "sim_only": false,
+  "world_file": "../../webots/worlds/drone_rl_training.wbt",
+  "waypoints_file": "../../webots/worlds/waypoints.txt",
+  "obstacles_file": null,
+  "log_dir": "flight_data",
+  "reward_weights": {
+    "progress": 10.0,
+    "distance": -1.0,
+    "collision": -100.0,
+    "completion": 100.0,
+    "altitude": -0.1,
+    "stability": -0.05,
+    "energy": -0.01
+  },
+  "done_on_collision": true,
+  "state_normalization": true,
+  "max_episode_steps": 1000,
+  "time_step": 32,
+  "reward_type": "dense",
+  "observation_config": {
+    "position": true,
+    "rotation": true,
+    "velocity": true,
+    "waypoint": true,
+    "distance_to_waypoints": true,
+    "distance_to_obstacles": true,
+    "lidar": true,
+    "camera": false
+  }
+} 

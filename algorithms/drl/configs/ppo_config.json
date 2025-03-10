@@ -1,0 +1,22 @@
+{
+  "gamma": 0.99,
+  "gae_lambda": 0.95,
+  "clip_ratio": 0.2,
+  "policy_learning_rate": 3e-4,
+  "value_learning_rate": 1e-3,
+  "target_kl": 0.01,
+  "entropy_coef": 0.01,
+  "value_loss_coef": 0.5,
+  "max_grad_norm": 0.5,
+  "update_epochs": 10,
+  "batch_size": 64,
+  "hidden_sizes": [256, 256],
+  "total_timesteps": 1000000,
+  "steps_per_epoch": 2048,
+  "save_freq": 10,
+  "eval_freq": 5,
+  "log_freq": 1,
+  "action_std": 0.6,
+  "action_std_decay_rate": 0.05,
+  "min_action_std": 0.1
+} 

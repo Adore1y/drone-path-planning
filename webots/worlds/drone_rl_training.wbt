@@ -1,0 +1,175 @@
+#VRML_SIM R2025 utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025/projects/objects/floors/protos/Floor.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025/projects/appearances/protos/Parquetry.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025/projects/robots/dji/mavic/protos/Mavic2Pro.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025/projects/objects/factory/containers/protos/CardboardBox.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025/projects/objects/trees/protos/BigTree.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025/projects/objects/obstacles/protos/OilBarrel.proto"
+
+WorldInfo {
+  info [
+    "Drone Path Planning DRL Training Environment"
+    "This world is designed for training reinforcement learning algorithms"
+    "for drone path planning and obstacle avoidance"
+  ]
+  title "Drone RL Training"
+  basicTimeStep 16
+  defaultDamping Damping {
+    linear 0.5
+    angular 0.5
+  }
+}
+
+Viewpoint {
+  orientation -0.17631119519339792 0.2701347913486328 0.9464413944158613 1.3023613675251605
+  position 7.499658840724217 -9.849671273545707 4.90557932663842
+  follow "Mavic 2 PRO"
+  followType "Mounted Shot"
+}
+
+TexturedBackground {}
+TexturedBackgroundLight {}
+
+Floor {
+  size 40 40
+  tileSize 1 1
+  appearance Parquetry {
+    type "chequered"
+    colorOverride 0.8 0.8 0.8
+  }
+}
+
+DEF DRONE Mavic2Pro {
+  translation 0 0 0.1
+  name "Mavic 2 PRO"
+  controller "mavic_python"
+  supervisor TRUE
+}
+
+# Boundary walls for training area
+Solid {
+  children [
+    DEF BOUNDARY_WALL Shape {
+      appearance PBRAppearance {
+        baseColor 0.8 0.8 0.8
+        roughness 0.5
+        metalness 0
+      }
+      geometry Box {
+        size 40 0.2 2
+      }
+    }
+  ]
+  translation 0 20 1
+}
+
+Solid {
+  children [
+    USE BOUNDARY_WALL
+  ]
+  translation 0 -20 1
+}
+
+Solid {
+  children [
+    DEF BOUNDARY_WALL_SIDE Shape {
+      appearance PBRAppearance {
+        baseColor 0.8 0.8 0.8
+        roughness 0.5
+        metalness 0
+      }
+      geometry Box {
+        size 0.2 40 2
+      }
+    }
+  ]
+  translation 20 0 1
+}
+
+Solid {
+  children [
+    USE BOUNDARY_WALL_SIDE
+  ]
+  translation -20 0 1
+}
+
+# Obstacles for training
+DEF OBSTACLE1 CardboardBox {
+  translation 5 0 0.3
+  size 0.6 0.6 0.6
+}
+
+DEF OBSTACLE2 CardboardBox {
+  translation 3 2 0.3
+  size 0.6 0.6 0.6
+}
+
+DEF OBSTACLE3 CardboardBox {
+  translation 7 -3 0.3
+  size 0.6 0.6 0.6
+}
+
+DEF OBSTACLE4 OilBarrel {
+  translation 4 -2 0.44
+  height 0.88
+  radius 0.4
+}
+
+DEF OBSTACLE5 OilBarrel {
+  translation 6 1 0.44
+  height 0.88
+  radius 0.4
+}
+
+DEF TREE1 BigTree {
+  translation 8 5 0
+  scale 1.5 1.5 1.5
+}
+
+DEF TREE2 BigTree {
+  translation -5 8 0
+  scale 1.5 1.5 1.5
+}
+
+# Waypoint markers
+DEF WAYPOINT1 Solid {
+  translation 2 2 0.1
+  children [
+    DEF WAYPOINT_SHAPE Shape {
+      appearance PBRAppearance {
+        baseColor 0 1 0
+        roughness 0.2
+        metalness 0
+        transparency 0.5
+      }
+      geometry Cylinder {
+        height 0.1
+        radius 0.5
+      }
+    }
+  ]
+}
+
+DEF WAYPOINT2 Solid {
+  translation 4 0 0.1
+  children [
+    USE WAYPOINT_SHAPE
+  ]
+}
+
+DEF WAYPOINT3 Solid {
+  translation 6 -2 0.1
+  children [
+    USE WAYPOINT_SHAPE
+  ]
+}
+
+DEF WAYPOINT4 Solid {
+  translation 8 0 0.1
+  children [
+    USE WAYPOINT_SHAPE
+  ]
+} 

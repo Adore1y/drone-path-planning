@@ -1,0 +1,15 @@
+# Waypoints for drone path planning
+# Format: x y z
+# Units: meters
+
+# Starting position (takeoff)
+0 0 1
+
+# Path waypoints
+2 2 1.5
+4 0 2
+6 -2 1.5
+8 0 1
+
+# Final waypoint (landing zone)
+10 2 0.5 
