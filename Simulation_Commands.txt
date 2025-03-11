@@ -1,0 +1,2 @@
+Command to run Webots simulation: open -a Webots.app "$(pwd)/webots/worlds/mixed_scenario.wbt"
+Command to analyze simulation data: cd webots/controllers/mavic_python && python analyze_flight_data.py
