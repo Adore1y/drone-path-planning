@@ -73,10 +73,6 @@ python run_simulation.py --mode webots --algorithm GAT-DRL --scenario dense --nu
 - `results/`: 结果和可视化
 - `worlds/`: 场景数据
 
-## 👤 关于作者
-
-作为无人机导航和人工智能交叉领域的研究者，我专注于开发能够应用于实际场景的智能导航系统。本项目是我在研究生申请阶段完成的独立研究项目，展示了我在强化学习、路径规划和仿真验证方面的综合能力。
-
 ## 📄 许可证
 
 本项目基于MIT许可证开源 - 详见 [LICENSE](LICENSE) 文件
