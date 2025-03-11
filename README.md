@@ -1,85 +1,85 @@
-# 无人机城市环境路径规划研究
+# Urban Drone Path Planning Research
 
-## 项目概述
+## Project Overview
 
-本项目实现了多种路径规划算法在城市环境中的无人机路径规划研究，包括传统算法（A*、RRT*）和深度强化学习算法（GAT-DRL、PPO、DQN、TD3）。项目支持两种仿真模式：
+This project implements various path planning algorithms for drone navigation in urban environments, including traditional algorithms (A*, RRT*) and deep reinforcement learning algorithms (GAT-DRL, PPO, DQN, TD3). The project supports two simulation modes:
 
-1. **快速模拟**：使用Python直接生成模拟数据和可视化结果，适合快速实验和算法比较。
-2. **Webots物理仿真**：使用Webots机器人仿真器进行更真实的物理仿真，适合论文发表的严谨研究。
+1. **Rapid Simulation**: Using Python to directly generate simulation data and visualization results, suitable for quick experiments and algorithm comparisons.
+2. **Webots Physical Simulation**: Using the Webots robot simulator for more realistic physical simulation, suitable for rigorous research and publication.
 
-## 环境要求
+## Requirements
 
 - Python 3.8+
-- Webots R2023a（用于物理仿真模式）
-- PyTorch 2.0+（用于DRL算法）
+- Webots R2023a (for physical simulation mode)
+- PyTorch 2.0+ (for DRL algorithms)
 
-## 安装与设置
+## Installation and Setup
 
-1. 克隆仓库
+1. Clone the repository
 ```
 git clone https://github.com/Adore1y/drone-path-planning.git
 cd drone-path-planning
 ```
 
-2. 安装依赖
+2. Install dependencies
 ```
 pip install -r requirements.txt
 ```
 
-3. 设置Webots环境（对于物理仿真模式）
+3. Set up Webots environment (for physical simulation mode)
 ```
 python setup_webots.py
 ```
 
-## 使用方法
+## Usage
 
-### 快速模拟模式
+### Rapid Simulation Mode
 
-运行快速模拟以获取算法性能比较：
+Run rapid simulation to obtain algorithm performance comparisons:
 
 ```
 python run_simulation.py --mode mock --algorithm GAT-DRL --scenario mixed --num_waypoints 5
 ```
 
-### Webots物理仿真模式
+### Webots Physical Simulation Mode
 
-运行Webots物理仿真：
+Run Webots physical simulation:
 
 ```
 python run_simulation.py --mode webots --algorithm GAT-DRL --scenario dense --num_waypoints 6
 ```
 
-## 支持的算法
+## Supported Algorithms
 
-- **GAT-DRL**：结合图注意力网络的深度强化学习
-- **PPO**：近端策略优化
-- **DQN**：深度Q网络
-- **TD3**：双延迟深度确定性策略梯度
-- **A***：传统A*搜索算法
-- **RRT***：随机快速扩展树*
+- **GAT-DRL**: Deep Reinforcement Learning with Graph Attention Networks
+- **PPO**: Proximal Policy Optimization
+- **DQN**: Deep Q-Network
+- **TD3**: Twin Delayed Deep Deterministic Policy Gradient
+- **A***: Traditional A* Search Algorithm
+- **RRT***: Rapidly-exploring Random Tree*
 
-## 支持的场景
+## Supported Scenarios
 
-- **sparse**：稀疏城市环境（10栋建筑物）
-- **mixed**：混合城市环境（20栋建筑物）
-- **dense**：密集城市环境（30栋建筑物）
+- **sparse**: Sparse urban environment (10 buildings)
+- **mixed**: Mixed urban environment (20 buildings)
+- **dense**: Dense urban environment (30 buildings)
 
-## 项目结构
+## Project Structure
 
-- `algorithms/`: 路径规划算法实现
-- `webots/`: Webots仿真相关文件
-- `utils/`: 工具函数
-- `models/`: 预训练模型
-- `results/`: 结果和可视化
-- `worlds/`: 场景数据
+- `algorithms/`: Path planning algorithm implementations
+- `webots/`: Webots simulation related files
+- `utils/`: Utility functions
+- `models/`: Pre-trained models
+- `results/`: Results and visualizations
+- `worlds/`: Scene data
 
-## 📄 许可证
+## 📄 License
 
-本项目基于MIT许可证开源 - 详见 [LICENSE](LICENSE) 文件
+This project is open-sourced under the MIT License - see the [LICENSE](LICENSE) file for details
 
-## 📚 项目资源
+## 📚 Project Resources
 
-- 项目代码库: [GitHub - Adore1y/drone-path-planning](https://github.com/Adore1y/drone-path-planning)
+- Project Repository: [GitHub - Adore1y/drone-path-planning](https://github.com/Adore1y/drone-path-planning)
 
 
 
